@@ -1,5 +1,5 @@
-# Copyright Peter Markfelder 2020
 #!/bin/sh
+# Copyright Peter Markfelder 2020
 
 getkernel_usage() {
 	echo "getkernel 1.0\nUsage:\t\tgetkernel <kernel-version>\nExample:\tgetkernel 5.8.6\n"
