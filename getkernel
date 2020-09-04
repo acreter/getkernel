@@ -1,0 +1,52 @@
+# Copyright Peter Markfelder 2020
+#!/bin/sh
+
+getkernel_usage() {
+	echo "getkernel 1.0\nUsage:\t\tgetkernel <kernel-version>\nExample:\tgetkernel 5.8.6\n"
+	echo "getkernel does not take any optional arguments,
+but is configured by environment variables:
+GETKERNEL_ARCHIVE_DIR\tThis is where the kernel sources will be stored (default: '/usr/src/linux')
+GETKERNEL_CONFIG\tThe kernel config file (default: '/proc/config.gz' see IKCONFIG_PROC)"
+	exit $1
+}
+
+KERNEL_VERSION=$1
+[ -n "$KERNEL_VERSION" ] || getkernel_usage 1
+(echo "$KERNEL_VERSION" | grep -Eqx "[1-9]\.[0-9]{1,2}(\.[1-9]{1,2})?") || getkernel_usage 1
+
+GETKERNEL_ARCHIVE_DIR="${GETKERNEL_ARCHIVE_DIR:-/usr/src/linux}"
+GETKERNEL_CONFIG="${GETKERNEL_CONFIG:-/proc/config.gz}"
+
+[ -f "$GETKERNEL_CONFIG" ] || {
+	echo "Could not find config file $GETKERNEL_CONFIG"
+	exit 1
+}
+
+[ -d "$GETKERNEL_ARCHIVE_DIR" ] || {
+	mkdir -pv "$GETKERNEL_ARCHIVE_DIR"
+	exit 1
+}
+
+GETKERNEL_EXPAND="cat"
+GETKERNEL_CONFIG_TYPE=$(file "$GETKERNEL_CONFIG" | grep "gzip compressed data")
+[ -n "$GETKERNEL_CONFIG_TYPE" ] && GETKERNEL_EXPAND="zcat -v"
+
+GETKERNEL_MAJOR_VERSION=${KERNEL_VERSION%%.*}
+GETKERNEL_MINOR_VERSION=${KERNEL_VERSION#*.}
+
+curl "https://cdn.kernel.org/pub/linux/kernel/v${GETKERNEL_MAJOR_VERSION}.x/linux-${KERNEL_VERSION}.tar.xz" > "$GETKERNEL_ARCHIVE_DIR/kernel.tar.xz" || exit 1
+echo "Extracting..."
+tar -xf "$GETKERNEL_ARCHIVE_DIR/kernel.tar.xz" -C "/usr/src/linux/" || {
+	rm -v "$GETKERNEL_ARCHIVE_DIR/kernel.tar.xz"
+	exit 1
+}
+eval "$GETKERNEL_EXPAND" "$GETKERNEL_CONFIG" > "$GETKERNEL_ARCHIVE_DIR/linux-$KERNEL_VERSION/.config" || {
+	rm -rf "$GETKERNEL_ARCHIVE_DIR/linux-$KERNEL_VERSION"
+	rm -v "$GETKERNEL_ARCHIVE_DIR/kernel.tar.xz"
+	exit 1
+}
+make -C "$GETKERNEL_ARCHIVE_DIR/linux-$KERNEL_VERSION" oldconfig
+make -C "$GETKERNEL_ARCHIVE_DIR/linux-$KERNEL_VERSION"
+sudo make -C "$GETKERNEL_ARCHIVE_DIR/linux-$KERNEL_VERSION" install
+sudo make -C "$GETKERNEL_ARCHIVE_DIR/linux-$KERNEL_VERSION" modules_install
+rm -v "$GETKERNEL_ARCHIVE_DIR/kernel.tar.xz"
