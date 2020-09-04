@@ -23,8 +23,7 @@ GETKERNEL_CONFIG="${GETKERNEL_CONFIG:-/proc/config.gz}"
 }
 
 [ -d "$GETKERNEL_ARCHIVE_DIR" ] || {
-	mkdir -pv "$GETKERNEL_ARCHIVE_DIR"
-	exit 1
+	mkdir -pv "$GETKERNEL_ARCHIVE_DIR" || exit 1
 }
 
 GETKERNEL_EXPAND="cat"
