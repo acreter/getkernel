@@ -35,7 +35,7 @@ GETKERNEL_MINOR_VERSION=${KERNEL_VERSION#*.}
 
 curl "https://cdn.kernel.org/pub/linux/kernel/v${GETKERNEL_MAJOR_VERSION}.x/linux-${KERNEL_VERSION}.tar.xz" > "$GETKERNEL_ARCHIVE_DIR/kernel.tar.xz" || exit 1
 echo "Extracting..."
-tar -xf "$GETKERNEL_ARCHIVE_DIR/kernel.tar.xz" -C "/usr/src/linux/" || {
+tar -xf "$GETKERNEL_ARCHIVE_DIR/kernel.tar.xz" -C "$GETKERNEL_ARCHIVE_DIR" || {
 	rm -v "$GETKERNEL_ARCHIVE_DIR/kernel.tar.xz"
 	exit 1
 }
