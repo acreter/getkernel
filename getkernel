@@ -12,7 +12,7 @@ GETKERNEL_CONFIG\tThe kernel config file (default: '/proc/config.gz' see IKCONFI
 
 KERNEL_VERSION=$1
 [ -n "$KERNEL_VERSION" ] || getkernel_usage 1
-(echo "$KERNEL_VERSION" | grep -Eqx "[1-9]\.[0-9]{1,2}(\.[1-9]{1,2})?") || getkernel_usage 1
+(echo "$KERNEL_VERSION" | grep -Eqx "[1-9]\.[0-9]{1,2}(\.[0-9]{1,2})?") || getkernel_usage 1
 
 GETKERNEL_ARCHIVE_DIR="${GETKERNEL_ARCHIVE_DIR:-/usr/src/linux}"
 GETKERNEL_CONFIG="${GETKERNEL_CONFIG:-/proc/config.gz}"
